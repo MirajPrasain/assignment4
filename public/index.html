@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dog Breed Viewer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 40px;
+      }
+      img {
+        margin-top: 20px;
+        max-width: 400px;
+        border-radius: 10px;
+      }
+      #message {
+        margin-top: 20px;
+        font-weight: bold;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Dog Breed Image Viewer</h1>
+
+    <input
+      type="text"
+      id="breedInput"
+      list="breeds"
+      placeholder="Enter dog breed"
+    />
+    <datalist id="breeds"></datalist>
+
+    <br /><br />
+    <button id="showBtn">Show Images</button>
+
+    <div id="message"></div>
+    <img id="dogImage" src="" alt="Dog image" />
+
+
+  <script>
+  const breedInput = document.getElementById("breedInput");
+  const datalist = document.getElementById("breeds");
+  const showBtn = document.getElementById("showBtn");
+  const message = document.getElementById("message");
+  const dogImage = document.getElementById("dogImage");
+
+  let breedsList = [];
+  let intervalId = null;
+
+ 
+  async function loadBreeds() {
+    const response = await fetch("/breeds");
+    const breeds = await response.json(); 
+    breedsList = breeds;
+
+    datalist.innerHTML = "";
+    breeds.forEach((breed) => {
+      const option = document.createElement("option");
+      option.value = breed;
+      datalist.appendChild(option);
+    });
+  }
+
+  
+  async function fetchDogImage(breed) {
+    const response = await fetch(`/image/${breed}`);
+    const data = await response.json(); 
+
+    if (data.error) return;
+
+    dogImage.src = data.image;
+  }
+
+  showBtn.addEventListener("click", () => {
+    const breed = breedInput.value.toLowerCase().trim();
+
+    clearInterval(intervalId);
+    message.textContent = "";
+    dogImage.src = "";
+
+    if (!breedsList.includes(breed)) {
+      message.textContent = "No such breed";
+      return;
+    }
+
+    fetchDogImage(breed);
+    intervalId = setInterval(() => fetchDogImage(breed), 5000);
+  });
+
+  loadBreeds();
+</script>
+    </script>
+  </body>
+</html>
